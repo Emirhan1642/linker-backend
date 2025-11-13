@@ -14,29 +14,22 @@ admin.initializeApp({
 // 🔔 Bildirim gönderen endpoint (sadece data mesajı)
 app.post("/send-notification", async (req, res) => {
   const { token, title, body, senderUid, receiverUid } = req.body;
-  const { getMessaging } = require("firebase-admin/messaging");
-    
+
   const message = {
-    data: {
-      title,
-      body,
-      senderUid,
-      receiverUid
-    },
+    data: { title, body, senderUid, receiverUid },
     token,
   };
 
-  getMessaging().send(message)
-    .then((response) => {
-      console.log('Mesaj başarıyla gönderildi:', response);
-      res.status(200).send({ success: true, message: "Bildirim gönderildi." });
-  })
-    .catch((error) => {
-      console.error('Mesaj gönderme hatası:', error);
-      res.status(500).send({ success: false, message: "Bildirim gönderilemedi." });
-  });
-
+  try {
+    const response = await admin.messaging().send(message);
+    console.log('Mesaj başarıyla gönderildi:', response);
+    res.status(200).send({ success: true, message: "Bildirim gönderildi." });
+  } catch (error) {
+    console.error('Mesaj gönderme hatası:', error);
+    res.status(500).send({ success: false, message: "Bildirim gönderilemedi." });
+  }
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Server çalışıyor: ${PORT}`));
