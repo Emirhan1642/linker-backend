@@ -16,15 +16,23 @@ admin.initializeApp({
 app.post("/send-notification", async (req, res) => {
   try {
     const { token, title, body } = req.body;
+
+    if (!token || !title || !body) {
+      return res.status(400).json({ success: false, message: "Eksik parametre!" });
+    }
+
     const message = {
       notification: { title, body },
       token,
     };
-    await admin.messaging().send(message);
-    res.status(200).send("Bildirim gönderildi!");
+
+    const response = await admin.messaging().send(message);
+    console.log("✅ Bildirim gönderildi:", response);
+
+    res.status(200).json({ success: true, message: "Bildirim gönderildi!", response });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Bildirim gönderilemedi.");
+    console.error("❌ Bildirim gönderme hatası:", error);
+    res.status(500).json({ success: false, message: "Bildirim gönderilemedi.", error: error.message });
   }
 });
 
